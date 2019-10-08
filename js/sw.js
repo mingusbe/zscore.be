@@ -1,4 +1,4 @@
-var cacheName = 'zscore';
+var cacheName = 'zscore.be';
 var filesToCache = [
   '/',
   '/index.html',
