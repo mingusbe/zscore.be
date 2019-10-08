@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<!-- Web Application Manifest -->
+<script type="application/json" rel="manifest" src="manifest.json"></script>
+
+
+<meta charset="utf-8">
+<title>z-score calculator (Belgian growth reference)</title>
+<link rel="stylesheet" href="css/style.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Chrome for Android theme color -->
+<meta name="theme-color" content="#8aadb8">
+
+<meta name="description" content="z-score calculator (Belgian growth reference)">
+
+<!-- Add to homescreen for Chrome on Android -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="zscore (bel)">
+<link rel="icon" sizes="192x192" href="images/icons/icon-192x192.png">
+
+<!-- Add to homescreen for Safari on iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="z-score (bel)">
+<link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+
+<!-- Tile for Win8 -->
+<meta name="msapplication-TileColor" content="#8aadb8">
+<meta name="msapplication-TileImage" content="images/icons/icon-192x192.png">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+<script type="text/javascript" src="js/lmsfuns.js"></script>
+<script type="text/javascript">
+
+// show or hide contents on click
+function showhide(id) {
+  var el = document.getElementById(id);
+  if (el.style.display === "none") {
+    el.style.display = "inline";
+  } else {
+    el.style.display = "none";
+  }
+}
+
+// form functions 
+function compute(form) {
+  age = form.age.value;
+  length = form.length.value;
+  weight = form.weight.value;
+  if (form.sex.checked) {
+    sex = 1; // it's a girl!
+  } else {
+    sex = 0;
+  }
+  haz = sds(hlms, sex, age, length);
+  hap = normalcdf(haz);
+
+  waz = sds(wlms, sex, age, weight);
+  wap = normalcdf(waz);
+
+  if(length > 0 && weight > 0){ 
+    bmi = weight/Math.pow(length/100, 2);
+  } else {
+    bmi = null;
+  }
+
+  if(bmi > 0 && isFinite(bmi)){
+    form.bmi.value = round(bmi,1);
+    bmiz = sds(blms, sex, age, bmi);
+    bmip = normalcdf(bmiz); 
+  } else {
+    form.bmi.value = null;
+    bmiz = null;
+    bmip = null;
+  }
+
+  form.haz.value = haz;
+  form.waz.value = waz;
+  form.bmiz.value = bmiz;
+
+  form.hap.value = hap;
+  form.wap.value = wap;
+  form.bmip.value = bmip;
+}
+
+
+function change_sex(form) {
+  form.sex.checked = !form.sex.checked;
+  compute(form)
+  if(form.sex.checked){ //  its a girl!
+    form.sexbutton.value = "girl";
+  } else {
+    form.sexbutton.value = "boy";
+  }
+}
+
+</script>
+</head>
+
+<body>
+<div class="container" style="border:1px solid #004d99;background-color:transparent;padding-top:0;padding-bottom:0px;">
+<h1><div class="z">z</div>-score calculator <span class="ref">(Belgium)</span></h1>
+</div>
+
+<form>
+<input type="checkbox" id="sex" unchecked/>
+<div class="container">
+<div>
+  <div class="row">
+      <div class="col100">
+		<input type="button" id="sexbutton" value = "boy" onclick="change_sex(this.form)">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col33">
+        <label for="fname">age</label>
+        <input type="text" id="age, years" name="age" placeholder="years" inputmode="numeric" pattern="\d*(\.\d+)?$" autocomplete="off" onblur="compute(this.form)">
+      </div>
+      <div class="col33" style="text-align:center">
+        <label for="" style="font-weight:bold;color:#004d99;"><br>z-score<br>&#x25bc;</label>
+      </div>
+      <div class="col33" style="text-align:center">
+        <label for="" style="font-weight:bold;color:#bd3000"><br>percentile<br>&#x25bc;</label>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col100">
+        <label for="length">length, centimeters</label>
+      </div>
+      <div class="col33">
+        <input type="text" id="length" name="length" placeholder="cm" inputmode="numeric" pattern="\d*(\.\d+)?$" autocomplete="off" onblur="compute(this.form)">
+      </div>
+      <div class="col33">
+        <input type="text" id="haz" name="haz" placeholder="" style="text-align:center;color:#004d99" disabled>
+      </div>
+      <div class="col33">
+        <input type="text" id="hap" name="hap" placeholder="" style="text-align:center;color:#bd3000" disabled>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col100">
+        <label for="weight">weight, kilogrammes</label>
+      </div>
+      <div class="col33">
+        <input type="text" id="weight" name="weight" placeholder="kg" inputmode="numeric" pattern="\d*(\.\d+)?$" autocomplete="off" onblur="compute (this.form)">
+      </div>
+      <div class="col33">
+        <input type="text" id="waz" name="waz" placeholder="" style="text-align:center;color:#004d99" disabled>
+      </div>
+      <div class="col33">
+        <input type="text" id="wap" name="wap" placeholder="" style="text-align:center;color:#bd3000" disabled>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col100">
+        <label for="bmi">body mass index, kg/m&sup2 [auto]</label>
+      </div>
+      <div class="col33">
+        <input type="text" id="bmi" name="bmi" placeholder="kg/m&sup2" inputmode="numeric" pattern="\d*(\.\d+)?$" autocomplete="off" disabled onblur="compute (this.form)">
+      </div>
+      <div class="col33">
+        <input type="text" id="bmiz" name="bmiz" placeholder="" style="text-align:center;color:#004d99" disabled>
+      </div>
+      <div class="col33">
+        <input type="text" id="bmip" name="bmip" placeholder="" style="text-align:center;color:#bd3000" disabled>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col100">
+        <br>
+        <input type="button" value="compute" onclick="compute(this.form)">
+      </div>
+    </div>
+</div>
+</div>
+</form>
+<div class="container" style="border:1px solid #004d99;background-color:transparent;padding-top:0;">
+<h4><div class="z">z</div>-score = SDS, SD (Standard Deviation) Score, Standard score<br></h4>
+<h5><div onclick="showhide('ref')" style="cursor: pointer;">Growth reference: Roelants M, Hoppenbrouwers K, Hauspie R. (2009)
+<div id="ref" style="display:none">References for growth and pubertal development from birth to 21 years in Flanders (Belgium). Ann Hum Biol. 36:680–694</div></div></h5>
+<h4><div onclick="showhide('app_info')" style="cursor: pointer;"><b>The growth <div class="z">z</div>-score calculator</b> <div class="info">i</div> <div id="app_info" style="display:none"> version 1.1 - This app (c) 2019 Mathieu Roelants, Environment and Health, Public health and primary care, KU Leuven - University of Leuven, Belgium. Click above for a full reference of the growth chart. <div id="install_link" onclick="install_pwa()" style="color:#bd4000; display:none; z-index:99;">Click here to install this App.</div><div>
+<div style="margin-top:10px;">
+<a href="https://www.kuleuven.be/" target="_blank" style="text-decoration: none;">
+<img src="images/logo/kuleuven.svg" width="30%"/></a>
+<a href="https://www.vwvj.be/" target="_blank" style="text-decoration: none;">
+<img src="images/logo/vwvj.svg" width="12%">
+<svg width="50%" viewBox="0 0 240 50">
+  <text fill=#537777 font-family="Helvetica, Arial, sans-serif" font-weight="600" font-size="12">
+  <tspan x="5" y="15">Vlaamse Wetenschappelijke Vereniging</tspan>
+  <tspan x="5" y="30">voor Jeugdgezondheidszorg</tspan></text>
+</svg>
+</a>
+</div>
+</div></div></h4>
+<script type="text/javascript" src="js/main.js"></script>
+<script type="text/javascript" src="js/install.js"></script>
+</body>
+</html>
